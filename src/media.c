@@ -374,6 +374,47 @@ void render_blitable_v2(graphics* g, blitable* b, v2 point){
 	render_blitable(g, b, point.x, point.y);
 }
 
+void set_animation(animation** root, animation* other, blitable* b){
+	if (*root == other) return;
+	*root = other;
+	(*root)->frame = (*root)->start;
+	(*root)->frame_timer = (*root)->frame_time;
+	b->draw_bound.x = (*root)->frame % (uint16_t)(b->texture_w/b->draw_bound.w);
+	b->draw_bound.y = (*root)->frame / (uint16_t)(b->texture_h/b->draw_bound.h);
+}
+
+animation animation_init(uint16_t start, uint16_t end, uint16_t frame_time){
+	animation anim = {
+		.start=start,
+		.end=end,
+		.frame=start,
+		.frame_time=frame_time,
+		.frame_timer=frame_time,
+		.loop=1,
+		.pause=0
+	};
+	return anim;
+}
+
+void mutate_animation(animation* anim, blitable* sprite, uint16_t time){
+	if (anim->pause){
+		return;
+	}
+	anim->frame_timer -= time;
+	if (anim->frame_timer > 0){
+		return;
+	}
+	anim->frame_timer = anim->frame_time;
+	if(anim->frame+1 != anim->end){
+		anim->frame += 1;
+	}
+	else if (anim->loop == 1){
+		anim->frame = anim->start;
+	}
+	sprite->draw_bound.x = (anim->frame % (sprite->texture_w/sprite->draw_bound.w))*sprite->draw_bound.w;
+	sprite->draw_bound.y = (anim->frame / (sprite->texture_h/sprite->draw_bound.h))*sprite->draw_bound.h;
+}
+
 void blit_surface(graphics* g, SDL_Texture* texture, SDL_Rect* src, SDL_Rect dst){
 	if (!render_in_view(g, dst.x, dst.y, dst.w, dst.h)){
 		return;

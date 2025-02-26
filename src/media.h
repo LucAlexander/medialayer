@@ -163,7 +163,20 @@ typedef struct blitable{
 blitable load_sprite(graphics* g, const char* path, uint16_t w, uint16_t h);
 void render_blitable(graphics* g, blitable* b, float x, float y);
 void render_blitable_v2(graphics* g, blitable* b, v2 point);
-//TODO animations too
+
+typedef struct animation{
+	uint16_t frame;
+	uint16_t frame_time;
+	uint16_t start;
+	uint16_t end;
+	int32_t frame_timer;
+	uint8_t loop;
+	uint8_t pause;
+}animation;
+
+void set_animation(animation** root, animation* other, blitable* b);
+animation animation_init(uint16_t start, uint16_t end, uint16_t frame_time);
+void mutate_animation(animation* anim, blitable* sprite, uint16_t time);
 
 void blit_surface(graphics* g, SDL_Texture* texture, SDL_Rect* src, SDL_Rect dst);
 void blit_surface_ex(graphics* g, SDL_Texture* texture, SDL_Rect* src, SDL_Rect dst, double angle, SDL_Point* center, SDL_RendererFlip flip);

@@ -10,7 +10,9 @@
 typedef struct state state;
 
 typedef struct user_state {
-
+	blitable sprite;
+	animation idle;
+	animation* root;
 } user_state;
 
 void user_init(state* const s);
