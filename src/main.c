@@ -74,8 +74,9 @@ int main(){
 		.tick = 0,
 		.running = 1
 	};
-	render_init(&s.render, WINDOW_W, WINDOW_H, WINDOW_TITLE);
+	render_init(&s.render, &s.main_mem, WINDOW_W, WINDOW_H, WINDOW_TITLE);
 	input_init(&s.input);
+	user_init(&s);
 	tick_reset(&s);
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop_arg(process_frame, &s, 0, 1);

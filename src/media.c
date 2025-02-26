@@ -2,6 +2,9 @@
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
+#include <SDL2/SDL_image.h>
+
+MAP_IMPL(SDL_Surface)
 
 float approach(float value, float point){
 	if (value > point){
@@ -185,10 +188,11 @@ void render_set_blend_mode(graphics* g, SDL_BlendMode b){
 	SDL_SetRenderDrawBlendMode(g->renderer, b);
 }
 
-void render_init(graphics* g, uint16_t width, uint16_t height, const char* title){
+void render_init(graphics* g, pool* const mem, uint16_t width, uint16_t height, const char* title){
 	g->render_quality = RENDER_SCALE_NEAREST;
 	g->window = NULL;
 	g->renderer = NULL;
+	g->surfaces = SDL_Surface_map_init(mem);
 	render_view_init(g);
 	g->sprite_scale_x = 1;
 	g->sprite_scale_y = 1;
@@ -322,6 +326,52 @@ void format_dest_rect_to_view(graphics* g, SDL_Rect* dest){
 void format_dest_frect_to_view(graphics* g, SDL_FRect* dest){
 	dest->x -= g->render_view.x;
 	dest->y -= g->render_view.y;
+}
+
+blitable load_sprite(graphics* g, const char* path, uint16_t w, uint16_t h){
+	SDL_Surface* sur = SDL_Surface_map_access(&g->surfaces, path);
+	if (sur == NULL){
+		sur = IMG_Load(path);
+		if (sur == NULL){
+			fprintf(stderr, " [!] No file '%s' found\n", path);
+			blitable b = {0};
+			return b;
+		}
+		SDL_Surface_map_insert(&g->surfaces, path, sur);
+	}
+	SDL_Texture* tex = SDL_CreateTextureFromSurface(g->renderer, sur);
+	blitable b = {
+		.texture = tex,
+		.draw_bound={0, 0, w, h},
+		.display_w = w,
+		.display_h = h,
+		.flags = BLITABLE_VISIBLE,
+		.angle = 0,
+		.center = {w/2, h/2}
+	};
+	SDL_QueryTexture(tex, NULL, NULL, &b.texture_w, &b.texture_h);
+	return b;
+}
+
+void render_blitable(graphics* g, blitable* b, float x, float y){
+	if (!(b->flags & BLITABLE_VISIBLE)){
+		return;
+	}
+	SDL_RendererFlip flipArg = SDL_FLIP_NONE;
+	if (b->flags & BLITABLE_FLIP_H){
+		flipArg |= SDL_FLIP_HORIZONTAL;
+		flipArg &= ~SDL_FLIP_NONE;
+	}
+	if (b->flags & BLITABLE_FLIP_V){
+		flipArg |= SDL_FLIP_VERTICAL;
+		flipArg &= ~SDL_FLIP_NONE;
+	}
+	SDL_FRect dest = {x-b->center.x, y-b->center.y, b->display_w, b->display_h};
+	blit_surface_exf(g, b->texture, &b->draw_bound, dest, b->angle, &b->center, flipArg);
+}
+
+void render_blitable_v2(graphics* g, blitable* b, v2 point){
+	render_blitable(g, b, point.x, point.y);
 }
 
 void blit_surface(graphics* g, SDL_Texture* texture, SDL_Rect* src, SDL_Rect dst){

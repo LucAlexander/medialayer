@@ -5,6 +5,8 @@
 
 #include <inttypes.h>
 
+#include "hashmap.h"
+
 #ifndef PI
 #define PI 3.14159265
 #endif
@@ -98,9 +100,12 @@ typedef enum RENDER_SCALE_QUALITY {
 	RENDER_SCALE_ANISOTROPIC=2
 } RENDER_SCALE_QUALITY;
 
+MAP_DEF(SDL_Surface)
+
 typedef struct graphics {
 	SDL_Window* window;
 	SDL_Renderer* renderer;
+	SDL_Surface_map surfaces;
 	view render_view;
 	uint16_t window_w;
 	uint16_t window_h;
@@ -117,7 +122,7 @@ typedef struct color {
 } color;
 
 void render_set_blend_mode(graphics* g, SDL_BlendMode b);
-void render_init(graphics* g, uint16_t width, uint16_t height, const char* title);
+void render_init(graphics* g, pool* const mem, uint16_t width, uint16_t height, const char* title);
 void render_deinit(graphics* g);
 void render_view_init(graphics* g);
 uint8_t render_in_view(graphics* g, float x, float y, float x2, float y2);
@@ -143,20 +148,22 @@ typedef enum BLITABLE_FLAGS{
 	BLITABLE_FLIP_V=4
 }BLITABLE_FLAGS;
 
-typedef struct Blitable{
+typedef struct blitable{
 	SDL_Texture* texture;
-	SDL_Rect drawBound;
-	uint32_t displayW;
-	uint32_t displayH;
-	int32_t textureW;
-	int32_t textureH;
+	SDL_Rect draw_bound;
+	uint32_t display_w;
+	uint32_t display_h;
+	int32_t texture_w;
+	int32_t texture_h;
 	BLITABLE_FLAGS flags;
 	double angle;
 	SDL_FPoint center;
-}Blitable;
+}blitable;
 
-//TODO blitable stuff once we know how to arenas for graphics
-//animations too
+blitable load_sprite(graphics* g, const char* path, uint16_t w, uint16_t h);
+void render_blitable(graphics* g, blitable* b, float x, float y);
+void render_blitable_v2(graphics* g, blitable* b, v2 point);
+//TODO animations too
 
 void blit_surface(graphics* g, SDL_Texture* texture, SDL_Rect* src, SDL_Rect dst);
 void blit_surface_ex(graphics* g, SDL_Texture* texture, SDL_Rect* src, SDL_Rect dst, double angle, SDL_Point* center, SDL_RendererFlip flip);
@@ -164,8 +171,8 @@ void blit_surface_f(graphics* g, SDL_Texture* texture, SDL_Rect* src, SDL_FRect 
 void blit_surface_exf(graphics* g, SDL_Texture* texture, SDL_Rect* src, SDL_FRect dst, double angle, SDL_FPoint* center, SDL_RendererFlip flip);
 
 typedef enum RECT_FILL_PARAM {
-	RECT_FILL,
-	RECT_OUTLINE
+	RECT_FILL=1,
+	RECT_OUTLINE=2
 } RECT_FILL_PARAM;
 
 void draw_line(graphics* g, float x, float y, float xx, float yy);

@@ -3,6 +3,7 @@
 
 #include "pool.h"
 
+#define TOKEN_MAX 128
 #define MAP_SIZE 128
 #define HASHMAP_ITERATE(i) for(uint8_t i = 0;i<MAP_SIZE;++i)
 
