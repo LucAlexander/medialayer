@@ -8,6 +8,7 @@ function clean_env {
 	rm -f $out
 	rm -f *.c
 	rm -f *.h
+	rm -f testserver.sh
 }
 
 function debug_env {
