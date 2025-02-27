@@ -1,6 +1,6 @@
 #!/bin/bash
 
-in=demo
+in=justgib
 out=ah
 
 function clean_env {
