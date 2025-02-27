@@ -60,8 +60,6 @@ void new_input_frame(user_input* inp);
 
 void mouse_move_event(user_input* inp, int32_t x, int32_t y);
 
-int32_t mouse_x(user_input* inp);
-int32_t mouse_y(user_input* inp);
 v2 mouse_pos(user_input* inp);
 
 void mouse_scroll_event(user_input* inp, int8_t);
