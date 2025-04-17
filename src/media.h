@@ -98,7 +98,7 @@ typedef enum RENDER_SCALE_QUALITY {
 	RENDER_SCALE_ANISOTROPIC=2
 } RENDER_SCALE_QUALITY;
 
-MAP_DEF(SDL_Surface)
+CSTR_MAP_DEF(SDL_Surface)
 
 typedef struct graphics {
 	SDL_Window* window;

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <SDL2/SDL_image.h>
 
-MAP_IMPL(SDL_Surface)
+CSTR_MAP_IMPL(SDL_Surface)
 
 float approach(float value, float point){
 	if (value > point){
