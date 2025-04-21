@@ -54,11 +54,10 @@ void user_init(state* const s){
 			pos = 0;
 		}
 	}
-	grow_network_sparse(
-		&net,
-		training_data, samples, expected,
-		1000, 100, 200
-	);
+	s->user.training_data = training_data;
+	s->user.expected = expected;
+	s->user.samples = samples;
+	s->user.initialized = 0;
 	s->user.net = net;
 	/*
 	prediction_vector vec = predict_vector_batched(&net, mem, &training_data, 1, net.batch_size, net.input->data.input.width);
@@ -67,7 +66,13 @@ void user_init(state* const s){
 }
 
 void user_mutate(state* const s){
-
+	grow_network_sparse(
+		&s->user.net,
+		s->user.training_data, s->user.samples, s->user.expected,
+		101, 100, 100,
+		!s->user.initialized
+	);
+	s->user.initialized = 1;
 }
 
 void user_clean(state* const s){
@@ -75,6 +80,7 @@ void user_clean(state* const s){
 }
 
 void render_node(state* const s, uint64_t id, float initial_x, float initial_y){
+	s->user.rendered[id] = 1;
 	layer* node = s->user.net.nodes[id];
 	node_circle* circ = &s->user.positions[id];
 	circ->x = initial_x;
@@ -110,7 +116,7 @@ void render_node(state* const s, uint64_t id, float initial_x, float initial_y){
 	float x = initial_x;
 	float y = initial_y;
 	if (node->next_count > 1){
-		y = initial_y-(node->next_count*circ->rad*4);
+		y = initial_y-(node->next_count*circ->rad*4)/2;
 	}
 	for (uint64_t i = 0;i<node->next_count;++i){
 		if (s->user.rendered[node->next[i]] == 1){
@@ -122,6 +128,9 @@ void render_node(state* const s, uint64_t id, float initial_x, float initial_y){
 }
 
 void user_render(state* const s){
+	if (s->user.initialized == 0){
+		return;
+	}
 	s->user.rendered = pool_request(&s->frame_mem, sizeof(uint8_t)*s->user.net.node_count);
 	s->user.positions = pool_request(&s->frame_mem, sizeof(node_circle)*s->user.net.node_count);
 	memset(s->user.rendered, 0, sizeof(uint8_t)*s->user.net.node_count);

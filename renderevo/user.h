@@ -18,6 +18,10 @@ typedef struct node_circle {
 
 typedef struct user_state {
 	network net;
+	double** training_data;
+	double** expected;
+	uint64_t samples;
+	uint8_t initialized;
 	uint8_t* rendered;
 	node_circle* positions;
 } user_state;
